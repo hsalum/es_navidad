@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>¿Es Navidad?</title>
+  <meta name="theme-color" content="#0b2a1e" />
+  <style>
+    :root{
+      --bg1:#061a13;
+      --bg2:#0b2a1e;
+      --card: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --accent:#ff4d6d;
+      --accent2:#41d3a2;
+      --gold:#ffd166;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(65,211,162,.18), transparent 60%),
+        radial-gradient(800px 500px at 80% 20%, rgba(255,77,109,.15), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+      cursor: default;
+    }
+
+    .snow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .9;
+    }
+
+    .wrap{
+      width:min(720px, 100%);
+      text-align:center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card{
+      position:relative;
+      padding: 28px 22px 22px;
+      border-radius: 22px;
+      background: var(--card);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 70px rgba(0,0,0,.35);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.15);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing:.2px;
+      margin-bottom: 14px;
+      user-select:none;
+    }
+
+    .dot{
+      width:9px; height:9px; border-radius:50%;
+      background: var(--accent2);
+      box-shadow: 0 0 0 6px rgba(65,211,162,.12);
+      animation: pulse 1.6s ease-in-out infinite;
+      flex: 0 0 auto;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.18); opacity: .85; }
+    }
+
+    .tzLabel{
+      color: rgba(255,255,255,.62);
+      margin-right: 4px;
+    }
+
+    select{
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.86);
+      padding: 6px 28px 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: .2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .selectWrap{
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .chev{
+      position: absolute;
+      right: 10px;
+      opacity: .7;
+      pointer-events: none;
+      font-size: 12px;
+      transform: translateY(1px);
+    }
+
+    h1{
+      margin: 8px 0 6px;
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .yes{
+      background: linear-gradient(90deg, var(--accent2), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(255,209,102,.08);
+    }
+
+    .no{
+      background: linear-gradient(90deg, #ffffff, rgba(255,255,255,.55));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sub{
+      margin: 10px 0 0;
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: var(--muted);
+      line-height:1.4;
+    }
+
+    .bigline{
+      margin-top: 14px;
+      font-size: clamp(18px, 2.4vw, 22px);
+      color: rgba(255,255,255,.86);
+    }
+
+    .footer{
+      margin-top: 14px;
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      letter-spacing: .2px;
+    }
+
+    .tree{
+      position:absolute;
+      right:18px; top:18px;
+      font-size: 18px;
+      opacity:.75;
+    }
+
+    .spark{
+      position:absolute;
+      left:18px; top:18px;
+      font-size: 18px;
+      opacity:.75;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas class="snow" id="snow"></canvas>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="spark">✨</div>
+      <div class="tree">🎄</div>
+
+      <div class="badge">
+        <span class="dot"></span>
+        <span class="tzLabel">Horario:</span>
+        <span class="selectWrap">
+          <select id="tzSelect" aria-label="Seleccionar zona horaria"></select>
+          <span class="chev">▾</span>
+        </span>
+      </div>
+
+      <h1 id="answer">…</h1>
+      <p class="sub" id="subtitle">…</p>
+      <p class="bigline" id="countdown">…</p>
+
+      <div class="footer">🎄 Hecho con espíritu navideño por hsalum</div>
+    </div>
+  </div>
+
+  <script>
+    const TZ_OPTIONS = [
+      { id: "America/Argentina/Buenos_Aires", label: "Argentina (Buenos Aires)" },
+      { id: "America/Mexico_City", label: "México (CDMX)" },
+      { id: "America/Santiago", label: "Chile (Santiago)" },
+      { id: "America/Lima", label: "Perú (Lima)" },
+      { id: "America/Bogota", label: "Colombia (Bogotá)" },
+      { id: "America/New_York", label: "USA (New York)" },
+      { id: "America/Los_Angeles", label: "USA (Los Ángeles)" },
+      { id: "Europe/Madrid", label: "España (Madrid)" }
+    ];
+
+    const STORAGE_KEY = "esnavidad_tz";
+    let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
+
+    function nowInTZAsUTCDate(timeZone) {
+      const dtf = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false
+      });
+      const parts = dtf.formatToParts(new Date());
+      const get = (type) => parts.find(p => p.type === type).value;
+
+      const y  = Number(get("year"));
+      const mo = Number(get("month"));
+      const d  = Number(get("day"));
+      const h  = Number(get("hour"));
+      const mi = Number(get("minute"));
+      const s  = Number(get("second"));
+      return new Date(Date.UTC(y, mo - 1, d, h, mi, s));
+    }
+
+    function isChristmasInTZ(nowTZ_utcEncoded) {
+      const m = nowTZ_utcEncoded.getUTCMonth() + 1;
+      const d = nowTZ_utcEncoded.getUTCDate();
+      return (m === 12 && d === 25);
+    }
+
+    function christmasStartThisOrNextYear(nowTZ_utcEncoded) {
+      const y = nowTZ_utcEncoded.getUTCFullYear();
+      const m = nowTZ_utcEncoded.getUTCMonth() + 1;
+      const d = nowTZ_utcEncoded.getUTCDate();
+      const passed = (m === 12 && d > 25);
+      const targetYear = passed ? (y + 1) : y;
+      return new Date(Date.UTC(targetYear, 11, 25, 0, 0, 0));
+    }
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+
+    function updateText() {
+      const nowTZ = nowInTZAsUTCDate(TZ);
+
+      const answerEl = document.getElementById("answer");
+      const subtitleEl = document.getElementById("subtitle");
+      const countdownEl = document.getElementById("countdown");
+
+      if (isChristmasInTZ(nowTZ)) {
+        answerEl.textContent = "Sí.";
+        answerEl.className = "yes";
+        subtitleEl.textContent = "Hoy es Navidad 🎄";
+        countdownEl.textContent = "¡Felices fiestas! ✨";
+        return;
+      }
+
+      answerEl.textContent = "No :(";
+      answerEl.className = "no";
+      subtitleEl.textContent = "Hoy no es Navidad.";
+
+      const target = christmasStartThisOrNextYear(nowTZ);
+      const diffMs = target.getTime() - nowTZ.getTime();
+      const totalMinutes = Math.max(0, Math.ceil(diffMs / 60000));
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      countdownEl.textContent = `Faltan ${hours} horas y ${pad2(minutes)} min para Navidad.`;
+    }
+
+    function setupTZSelect() {
+      const sel = document.getElementById("tzSelect");
+      sel.innerHTML = "";
+
+      for (const opt of TZ_OPTIONS) {
+        const o = document.createElement("option");
+        o.value = opt.id;
+        o.textContent = opt.label;
+        if (opt.id === TZ) o.selected = true;
+        sel.appendChild(o);
+      }
+
+      sel.addEventListener("change", () => {
+        TZ = sel.value;
+        localStorage.setItem(STORAGE_KEY, TZ);
+        updateText();
+      });
+    }
+
+    function setupSnow() {
+      const canvas = document.getElementById("snow");
+      const ctx = canvas.getContext("2d", { alpha: true });
+
+      const flakes = [];
+      const MAX_FLAKES = 190;
+
+      function resize() {
+        const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        canvas.width = Math.floor(window.innerWidth * dpr);
+        canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function spawnFlake(initial = false) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const r = rand(1.2, 3.3);
+        flakes.push({
+          x: rand(0, w),
+          y: initial ? rand(0, h) : rand(-50, -10),
+          r,
+          vy: rand(0.6, 1.9) + r * 0.22,
+          vx: rand(-0.45, 0.45),
+          drift: rand(0.003, 0.012),
+          phase: rand(0, Math.PI * 2),
+          opacity: rand(0.35, 0.85)
+        });
+      }
+
+      function init() {
+        flakes.length = 0;
+        for (let i = 0; i < MAX_FLAKES; i++) spawnFlake(true);
+      }
+
+      function step() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        ctx.clearRect(0, 0, w, h);
+
+        for (let i = flakes.length - 1; i >= 0; i--) {
+          const f = flakes[i];
+          f.phase += f.drift;
+          f.x += f.vx + Math.sin(f.phase) * 0.35;
+          f.y += f.vy;
+
+          if (f.y > h + 12) {
+            flakes.splice(i, 1);
+            spawnFlake(false);
+            continue;
+          }
+
+          if (f.x < -20) f.x = w + 20;
+          if (f.x > w + 20) f.x = -20;
+
+          ctx.beginPath();
+          ctx.globalAlpha = f.opacity;
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+        }
+
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(step);
+      }
+
+      resize();
+      init();
+      window.addEventListener("resize", () => { resize(); init(); });
+      requestAnimationFrame(step);
+    }
+
+    setupTZSelect();
+    updateText();
+    setInterval(updateText, 1000);
+    setupSnow();
+  </script>
+</body>
+</html>
